@@ -1,2 +1,2 @@
 # aws-authenticating-secgroup-scripts
-Scripts to use riboseinc/terraform-aws-authenticating-secgroup
+Scripts to use [terraform-aws-authenticating-secgroup](https://github.com/riboseinc/terraform-aws-authenticating-secgroup)
