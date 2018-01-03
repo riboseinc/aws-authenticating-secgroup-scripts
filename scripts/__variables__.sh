@@ -8,8 +8,7 @@ fi
 
 ## parse arguments
 
-until [ $# -eq 0 ]
-do
+until [ $# -eq 0 ]; do
   name=${1:1}; shift;
   if [[ -z "$1" || $1 == -* ]] ; then eval "export $name=''"; else eval "export $name=$1"; shift; fi
 done
@@ -26,8 +25,10 @@ log "aws_access_key=" "${aws_access_key}"
 log "aws_secret_key=" "${aws_secret_key}"
 log "api_url=" "${url}"
 
-readonly today=$(date -u +"%Y%m%d") #20171226
-readonly timestamp=$(date -u +"%Y%m%dT%H%M%SZ") #"20171226T112335Z"
+readonly timestamp=${timestamp-$(date -u +"%Y%m%dT%H%M%SZ")} #$(date -u +"%Y%m%dT%H%M%SZ") #"20171226T112335Z"
+readonly today=${today-$(date -u +"%Y%m%d")}  # $(date -u +"%Y%m%d") #20171226
+log "timestamp=" "${timestamp}"
+log "today=" "${today}"
 
 readonly api_host=$(printf ${api_url} | awk -F/ '{print $3}')
 readonly api_uri=$(printf ${api_url} | grep / | cut -d/ -f4-)

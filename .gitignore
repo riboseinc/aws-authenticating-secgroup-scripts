@@ -3,4 +3,4 @@
 
 test_uri_parse.sh
 test_args.sh
-invoke_it.sh
+tests/**
