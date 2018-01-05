@@ -5,8 +5,14 @@ if [ "${__utils__}" = true ] ; then
 fi
 
 function sha256Hash() {
-  local output=$(printf "$1" | openssl dgst -sha256)
-  printf "${output}"
+  uname | grep -q ^Darwin
+  if [ $? -eq 0 ]; then
+    local output="$(printf "$1" | ${OPENSSL_BIN} dgst -sha256 -binary | xxd -p -c 256)"
+  else
+    local output="$(printf "$1" | ${OPENSSL_BIN} dgst -sha256)"
+  fi
+
+  echo "${output}"
 }
 
 function log() {
@@ -18,7 +24,14 @@ function log() {
 }
 
 function hmac_sha256() {
-   printf "$2" | openssl dgst -binary -hex -sha256 -mac HMAC -macopt hexkey:"$1"
+  uname | grep -q ^Darwin
+  if [ $? -eq 0 ]; then
+    local hash="$(printf "$2" | ${OPENSSL_BIN} dgst -binary -sha256 -mac HMAC -macopt hexkey:"$1" | xxd -p -c 256)"
+  else
+    local hash="$(printf "$2" | openssl dgst -binary -hex -sha256 -mac HMAC -macopt hexkey:"$1")"
+  fi
+
+  echo "${hash}"
 }
 
 __utils__=true

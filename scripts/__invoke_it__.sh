@@ -1,5 +1,6 @@
 #!/bin/bash
 
+. __os_openssl__.sh
 . __variables__.sh
 . __sign_it__.sh
 
