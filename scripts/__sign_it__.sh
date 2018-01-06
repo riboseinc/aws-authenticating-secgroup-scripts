@@ -36,7 +36,7 @@ function task_2() {
 
 ## http://docs.aws.amazon.com/general/latest/gr/sigv4-calculate-signature.html
 function task_3() {
-    local secret=$(printf "AWS4${aws_secret_key}" | xxd -p -c 256)
+    local secret=$(to_hex "AWS4${aws_secret_key}")
     local k_date=$(hmac_sha256 "${secret}" "${today}")
     local k_region=$(hmac_sha256 "${k_date}" "${aws_region}")
     local k_service=$(hmac_sha256 "${k_region}" "${aws_service}")
