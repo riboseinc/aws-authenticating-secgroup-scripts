@@ -5,7 +5,7 @@ if [ "${__utils__}" = true ] ; then
 fi
 
 function sha256Hash() {
-    printf "$1" | ${OPENSSL_BIN} dgst -sha256 -binary | xxd -p -c 256
+    printf "$1" | ${OPENSSL_BIN} dgst -sha256 -binary -hex | sed 's/^.* //'
 }
 
 function log() {
@@ -16,8 +16,14 @@ function log() {
     printf "${details}\n\n" | sed 's/^/    /' >&2
 }
 
+to_hex() {
+    printf "$1" | od -A n -t x1 | tr -d [:space:]
+}
+
 function hmac_sha256() {
-    printf "$2" | ${OPENSSL_BIN} dgst -binary -sha256 -mac HMAC -macopt hexkey:"$1" | xxd -p -c 256
+    printf "$2" | \
+        ${OPENSSL_BIN} dgst -binary -hex -sha256 -mac HMAC -macopt hexkey:"$1" | \
+        sed 's/^.* //'
 }
 
 __utils__=true
