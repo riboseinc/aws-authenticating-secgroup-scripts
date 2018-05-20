@@ -87,14 +87,6 @@ function invoke_it() {
     curl -si -X ${method} "${api_url}" -H "${authorization_header}" -H "${header_x_amz_date}"
 }
 
-
-###################
-## main function ##
-###################
-
-
-## OpenSSL
-
 function install_openssl() {
     # macOS provides an outdated OpenSSL so you need to use a later one installed from Homebrew
 
