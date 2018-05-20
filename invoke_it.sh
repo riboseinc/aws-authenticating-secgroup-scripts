@@ -1,5 +1,9 @@
 #!/bin/bash
 
+set -o errexit
+set -o pipefail
+set -o nounset
+
 function sha256Hash() {
     printf "$1" | ${OPENSSL_BIN} dgst -sha256 -binary -hex | sed 's/^.* //'
 }
@@ -12,7 +16,7 @@ function log() {
     printf "${details}\n\n" | sed 's/^/    /' >&2
 }
 
-to_hex() {
+function to_hex() {
     printf "$1" | od -A n -t x1 | tr -d [:space:]
 }
 
@@ -81,10 +85,10 @@ function sign_it() {
 }
 
 function invoke_it() {
-    local method="$1"
-    local authorization_header=$(sign_it "${method}")
-    printf "> ${method}-ing ${api_url}\n"
-    curl -si -X ${method} "${api_url}" -H "${authorization_header}" -H "${header_x_amz_date}"
+    local http_method="$1"
+    local authorization_header=$(sign_it "${http_method}")
+    printf "> ${http_method}-ing ${api_url}\n"
+    curl -si -X ${http_method} "${api_url}" -H "${authorization_header}" -H "${header_x_amz_date}"
 }
 
 function install_openssl() {
@@ -130,7 +134,7 @@ function main() {
     readonly api_url="${url}"
     log "aws_access_key=" "${aws_access_key}"
     log "aws_secret_key=" "${aws_secret_key}"
-    log "api_url=" "${url}"
+    log "api_url=" "${api_url}"
 
     readonly timestamp=${timestamp-$(date -u +"%Y%m%dT%H%M%SZ")} #$(date -u +"%Y%m%dT%H%M%SZ") #"20171226T112335Z"
     readonly today=${today-$(date -u +"%Y%m%d")}  # $(date -u +"%Y%m%d") #20171226
@@ -150,6 +154,8 @@ function main() {
     readonly header_x_amz_date="x-amz-date:${timestamp}"
 
     invoke_it "${method}"
+
+    echo -e "\n\nDONE!!!"
 }
 
 main "$@"
