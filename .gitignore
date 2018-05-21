@@ -4,3 +4,4 @@
 test_uri_parse.sh
 test_args.sh
 tests/**
+test_ignoreme.sh
