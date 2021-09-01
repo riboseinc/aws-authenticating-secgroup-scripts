@@ -29,13 +29,14 @@ function hmac_sha256() {
 ## http://docs.aws.amazon.com/general/latest/gr/sigv4-create-canonical-request.html
 function task_1() {
     local http_request_method="$1"
+    local payload="$2"
     local canonical_uri="/${api_uri}"
     local canonical_query=""
 
     local header_host="host:${api_host}"
     local canonical_headers="${header_host}\n${header_x_amz_date}"
 
-    local request_payload=$(sha256Hash "")
+    local request_payload=$(sha256Hash "${payload}")
     local canonical_request="${http_request_method}\n${canonical_uri}\n${canonical_query}\n${canonical_headers}\n\n${signed_headers}\n${request_payload}"
 
     log "canonical_request=" "${canonical_request}"
@@ -77,7 +78,8 @@ function task_4() {
 
 function sign_it() {
     local method="$1"
-    local hashed_canonical_request=$(task_1 "${method}")
+    local payload="$2"
+    local hashed_canonical_request=$(task_1 "${method}" "${payload}")
     local string_to_sign=$(task_2 "${hashed_canonical_request}")
     local signature=$(task_3 "${string_to_sign}")
     local authorization_header=$(task_4 "${signature}")
@@ -86,9 +88,19 @@ function sign_it() {
 
 function invoke_it() {
     local http_method="$1"
-    local authorization_header=$(sign_it "${http_method}")
+    local request_body="$2"
+    local request_payload=""
+    if [[ ! -z "${request_body}" ]] ; then
+        request_payload=$(cat "${request_body}")
+    fi
+    local authorization_header=$(sign_it "${http_method}" "${request_payload}")
     printf "> ${http_method}-ing ${api_url}\n"
-    curl -si -X ${http_method} "${api_url}" -H "${authorization_header}" -H "${header_x_amz_date}"
+    if [[ -z "${request_body}" ]] ; then
+        curl -si -X ${http_method} "${api_url}" -H "${authorization_header}" -H "${header_x_amz_date}"
+    else
+        printf "(including body: ${request_body})\n"
+        curl -si -X ${http_method} "${api_url}" -H "${authorization_header}" -H "${header_x_amz_date}" --data "${request_payload}"
+    fi
 }
 
 function install_openssl() {
@@ -115,18 +127,23 @@ function install_openssl() {
 }
 
 function main() {
-    install_openssl
-
     ## parse arguments
     until [ $# -eq 0 ]; do
         name=${1:1}; shift;
         if [[ -z "$1" || $1 == -* ]] ; then eval "export $name=''"; else eval "export $name=$1"; shift; fi
     done
 
-    if [ -z "${credentials}" ] || [ -z "${url}" ] || [ -z "${method}" ] ; then
-        log "sample usage:" "<script> -method <http_method> -credentials <aws_access_key>:<aws_secret_key> -url <c_url>"
+    if [ -z "${credentials-}" ] || [ -z "${url-}" ] || [ -z "${method-}" ] ; then
+        log "sample usage:" "<script> -method <http_method> -credentials <aws_access_key>:<aws_secret_key> -url <c_url> -body <body>"
         exit 1
     fi
+
+    if [[ ! -z "${body-}" && ! -f "${body}" ]] ; then
+        echo "ERR body file '${body}' - not found"
+        exit 1
+    fi
+
+    install_openssl
 
     local method="${method}"
     local aws_access_key=$(cut -d':' -f1 <<<"${credentials}")
@@ -153,7 +170,7 @@ function main() {
     local signed_headers="host;x-amz-date"
     local header_x_amz_date="x-amz-date:${timestamp}"
 
-    invoke_it "${method}"
+    invoke_it "${method}" "${body-}"
 
     echo -e "\n\nDONE!!!"
 }
