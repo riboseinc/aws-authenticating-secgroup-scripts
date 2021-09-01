@@ -5,7 +5,7 @@ Scripts to use [terraform-aws-authenticating-secgroup](https://github.com/ribose
 - `-method`: "http_method"
 - `-credentials`: "aws_account_id:aws_access_key"
 - `-url`: the "/connection" url deployed at Aws Api Gateway using module [terraform-aws-authenticating-secgroup](https://github.com/riboseinc/terraform-aws-authenticating-secgroup)
-
+- `-body`: optional file containing the data to include in the request body
 
 ### Sample usage
 
@@ -13,7 +13,8 @@ Scripts to use [terraform-aws-authenticating-secgroup](https://github.com/ribose
 bash invoke_it.sh \
     -method POST \
     -credentials AKIAI53HQ44Fxxx:Kmxk9K1iABKnemz0yd6ccxCxxx \
-    -url https://xxx.execute-api.xxx.amazonaws.com/dev/connection
+    -url https://xxx.execute-api.xxx.amazonaws.com/dev/connection \
+    -body file.json
 ```
 
 
