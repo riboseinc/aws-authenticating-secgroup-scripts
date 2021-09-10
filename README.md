@@ -31,12 +31,12 @@ bash invoke_it.sh \
     -body file.json
 ```
 
-Using credentials from "test" profile of `~/.aws/credentials`
+Using credentials from "staging" profile of `~/.aws/credentials`
 
 ```bash
 bash invoke_it.sh \
     -method POST \
-    -awsprofile test
+    -awsprofile staging
     -url https://xxx.execute-api.xxx.amazonaws.com/dev/connection \
     -body file.json
 ```
