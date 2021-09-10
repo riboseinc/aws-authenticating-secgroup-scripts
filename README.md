@@ -3,11 +3,16 @@
 Scripts to use [terraform-aws-authenticating-secgroup](https://github.com/riboseinc/terraform-aws-authenticating-secgroup) (support [AWS Signature v4](http://docs.aws.amazon.com/general/latest/gr/signature-version-4.html))
 
 - `-method`: "http_method"
-- `-credentials`: "aws_account_id:aws_access_key"
+- `-awsprofile`: optional name of the aws profile in ~/.aws/credentials to extract access key & secret
+- `-credentials`: optional aws keys "aws_access_key:aws_secret_key"
 - `-url`: the "/connection" url deployed at Aws Api Gateway using module [terraform-aws-authenticating-secgroup](https://github.com/riboseinc/terraform-aws-authenticating-secgroup)
 - `-body`: optional file containing the data to include in the request body
 
+If `-credentials` is not supplied, the credentials will be extracted from `~/.aws/credentials`
+
 ### Sample usage
+
+With credentials on command line:
 
 ```bash
 bash invoke_it.sh \
@@ -17,6 +22,24 @@ bash invoke_it.sh \
     -body file.json
 ```
 
+Using credentials from "default" profile of `~/.aws/credentials`
+
+```bash
+bash invoke_it.sh \
+    -method POST \
+    -url https://xxx.execute-api.xxx.amazonaws.com/dev/connection \
+    -body file.json
+```
+
+Using credentials from "test" profile of `~/.aws/credentials`
+
+```bash
+bash invoke_it.sh \
+    -method POST \
+    -awsprofile test
+    -url https://xxx.execute-api.xxx.amazonaws.com/dev/connection \
+    -body file.json
+```
 
 ## Contributing
 
