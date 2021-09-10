@@ -126,6 +126,40 @@ function install_openssl() {
     fi
 }
 
+function parse_aws_credentials() {
+    local awsProfile="$1"
+    local awsAccessKey=""
+    local awsSecretKey=""
+    
+    INI_FILE=~/.aws/credentials
+
+    if [[ ! -f "${INI_FILE}" ]] ; then
+        printf ""
+        return
+    fi
+
+    while IFS=' = ' read key value
+    do
+        if [[ $key == \[*] ]] ; then
+            section=$key
+        elif [[ $value ]] && [[ $section == "[${awsProfile}]" ]] ; then
+            if [[ $key == 'aws_access_key_id' ]] ; then
+                awsAccessKey=$value
+            elif [[ $key == 'aws_secret_access_key' ]] ; then
+                awsSecretKey=$value
+            fi
+        fi
+    done < $INI_FILE
+    
+    if [[ -z "${awsAccessKey}" || -z "${awsSecretKey}" ]] ; then
+        printf ""
+    else
+        local credentials="${awsAccessKey}:${awsSecretKey}" 
+        log "found aws credentials: ${INI_FILE}" "${awsProfile} = ${credentials}"
+        printf "${credentials}"
+    fi
+}
+
 function main() {
     ## parse arguments
     until [ $# -eq 0 ]; do
@@ -133,8 +167,12 @@ function main() {
         if [[ -z "$1" || $1 == -* ]] ; then eval "export $name=''"; else eval "export $name=$1"; shift; fi
     done
 
+    if [ -z "${credentials-}" ] ; then
+        credentials=$(parse_aws_credentials "${awsprofile:=default}")
+    fi
+
     if [ -z "${credentials-}" ] || [ -z "${url-}" ] || [ -z "${method-}" ] ; then
-        log "sample usage:" "<script> -method <http_method> -credentials <aws_access_key>:<aws_secret_key> -url <c_url> -body <body>"
+        log "sample usage:" "<script> -method <http_method> [-awsprofile <profile>] [-credentials <aws_access_key>:<aws_secret_key>] -url <c_url> -body <body>"
         exit 1
     fi
 
