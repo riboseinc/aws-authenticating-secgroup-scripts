@@ -201,6 +201,11 @@ function main() {
 
     local aws_region=$(cut -d'.' -f3 <<<"${api_host}")
     local aws_service=$(cut -d'.' -f2 <<<"${api_host}")
+    # for Lambda Function URLs, we need "lambda" rather than "lambda-url".
+    if [[  $aws_service == 'lambda-url' ]]; then
+        local aws_service='lambda';
+    fi
+
 
     local algorithm="AWS4-HMAC-SHA256"
     local credential_scope="${today}/${aws_region}/${aws_service}/aws4_request"
